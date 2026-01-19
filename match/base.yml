@@ -1,0 +1,17 @@
+matches:
+  # Greetings
+  - trigger: ";hi"
+    replace: "Hi there, thanks for reaching out!"
+
+  - trigger: ";hello"
+    replace: "Hello! Thanks for contacting BSD. How can I help you today?"
+
+  # Closings
+  - trigger: ";thanks"
+    replace: "Thanks so much, and please don't hesitate to reach out if you have any other questions!"
+
+  - trigger: ";sig"
+    replace: |
+      Best regards,
+      [Your Name]
+      BSD Sales Team
