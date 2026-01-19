@@ -1,0 +1,113 @@
+# BSD Sales Team - FAQ Snippets
+# Tone: Friendly Professional
+#
+# To install: Copy this file to ~/.config/espanso/match/faq.yml
+# Then run: espanso restart
+
+matches:
+  # ============================================
+  # ;portal - Portal access + signup (MOST USED)
+  # ============================================
+  - trigger: ";portal"
+    replace: |
+      Great question! All our products and pricing are on the portal — you can browse everything there.
+
+      Do you have access yet? If not, sign up here and I'll make sure you're approved quickly: https://blacksanddistribution.com/pages/world-leading-distributor-of-global-brands-fmcg
+
+  # ============================================
+  # ;terms - Payment terms
+  # ============================================
+  - trigger: ";terms"
+    replace: |
+      Our standard terms for new customers are 20% Deposit / 80% Balance NET14.
+
+      Happy to discuss further once you've confirmed your brands of interest!
+
+  # ============================================
+  # ;moq - MOQ / FCL mixing explanation
+  # ============================================
+  - trigger: ";moq"
+    replace: |
+      Generally, our MOQ is 1 x 40ft FCL per brand or category.
+
+      However, we may be able to mix certain brands together if they load from the same or similar origin location. Just confirm your brands of interest and potential volume per brand, and we'll advise on mixing options.
+
+  # ============================================
+  # ;docs - Full document list
+  # ============================================
+  - trigger: ";docs"
+    replace: |
+      Here's the full list of documents we provide:
+
+      Financial Documents:
+      • PF - Pro Forma Invoice
+      • Final Invoice
+
+      Shipping Documents:
+      • CI - Commercial Invoice
+      • PL - Packing List
+      • Draft BL - Draft Bill of Lading
+      • Express BL - Release Bill of Lading
+
+      Supporting Documents:
+      • Shelf Life Statement
+      • Tracking Link
+      • Loading Images
+
+      Let me know if you need anything specific!
+
+  # ============================================
+  # ;cif - CIF shipping terms explanation
+  # ============================================
+  - trigger: ";cif"
+    replace: |
+      We generally operate on CIF shipping terms (delivered to your destination port).
+
+      For some products we may be able to work on EXW or FOB terms — happy to discuss with your dedicated account manager once we know your brands of interest.
+
+  # ============================================
+  # ;noddp - No DDP explanation
+  # ============================================
+  - trigger: ";noddp"
+    replace: |
+      Unfortunately we don't offer DDP terms. We're an international B2B distributor, so we generally work on CIF terms (to your chosen destination port).
+
+      We don't import, clear, or distribute locally in any market. However, if you're in the USA and the products are US-origin, we can potentially arrange delivery to your warehouse.
+
+  # ============================================
+  # ;leadtime - Lead time info
+  # ============================================
+  - trigger: ";leadtime"
+    replace: |
+      Lead time from deposit receipt to ready-to-load is roughly 2-3 weeks.
+
+      It can vary by brand and product — all lead time details are shown on the portal for each category. Once deposit is received, we move quickly and don't delay!
+
+  # ============================================
+  # ;nolc - No LC/Escrow
+  # ============================================
+  - trigger: ";nolc"
+    replace: |
+      We don't accept LC (Letter of Credit) or Escrow payments, unfortunately.
+
+      We work with bank/wire transfer. Happy to discuss payment terms if you have any concerns!
+
+  # ============================================
+  # ;locate - Office locations
+  # ============================================
+  - trigger: ";locate"
+    replace: |
+      We're registered in Hong Kong, with offices in London, Indonesia, and Taiwan. We also have Account Managers across every continent including the USA.
+
+      Happy to arrange a call with someone in your region if that helps!
+
+  # ============================================
+  # ;trust - Credibility/references response
+  # ============================================
+  - trigger: ";trust"
+    replace: |
+      Totally understand — trust is important in this business!
+
+      We can provide customer and logistics partner references where applicable. We're also happy to share our business registration and certificates on request.
+
+      And we're always up for a video call or in-person meeting whenever works for you. Just let me know!
