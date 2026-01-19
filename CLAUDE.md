@@ -50,38 +50,47 @@
 - Can read code, learning to write it
 - New to terminal/CLI operations
 
-### Current Level: 1 (Safety Net)
-*Maximum guidance, confirm everything, explain everything*
+### Current Level: 2 (Training Wheels)
+*Explain new concepts only, confirm destructive operations, less verbose*
 
 ---
 
-## Active Training Wheels (Level 1)
+## Training Levels Reference
 
-Claude must follow these practices until graduated:
+| Level | Name | Description |
+|-------|------|-------------|
+| 1 | Safety Net | Maximum guidance, confirm everything, explain everything |
+| 2 | Training Wheels | Explain new concepts only, confirm destructive ops, less verbose |
+| 3 | Riding Solo | Minimal explanation, just confirm destructive ops |
+| 4 | Full Speed | Trust established, only warn on major risks |
+
+---
+
+## Active Training Wheels (Level 2)
+
+Claude follows these practices at current level:
 
 ### Communication
-- [ ] **Explain commands before running** — Describe what any command does before executing
+- [ ] **Explain NEW commands/concepts only** — Skip explanation for familiar operations
 - [ ] **Translate errors to plain English** — Never leave an error unexplained
-- [ ] **Explain the "why"** — Every significant action needs rationale, not just steps
-- [ ] **Show file changes** — After creating/moving/deleting files, show the structure
+- [ ] **Brief output recaps** — Keep summaries short
 
 ### Safety
 - [ ] **Confirm before destructive operations** — Ask before: delete, overwrite, reset
 - [ ] **Warn before irreversible operations** — Flag operations that can't be undone
 
 ### Workflow
-- [ ] **Prompt to document decisions** — After decisions, ask "Should we add this to CLAUDE.md?"
 - [ ] **Suggest commit points** — Prompt when it's a good time to commit
-- [ ] **Prompt to add todos** — When tasks come up, ask "Should we add this to the todo list?"
 - [ ] **Review todos at session start** — Begin each session by checking the todo list
 
 ---
 
 ## Graduated Skills
 
-*Move items here as skills develop — Claude can reduce hand-holding on these*
+*Skills where Claude can reduce hand-holding*
 
-(None yet)
+- [x] **Git basics** — add, commit, status (2026-01-19)
+- [x] **File structure awareness** — No need to show tree after every change
 
 ---
 
@@ -197,6 +206,7 @@ matches:
 | 2026-01-19 | Use Espanso for text expansion | Cross-platform, YAML-based, supports scripts |
 | 2026-01-19 | Semicolon prefix for triggers | Avoids accidental triggers, easy to type |
 | 2026-01-19 | Separate base.yml and faq.yml | Organize by snippet type for maintainability |
+| 2026-01-19 | Graduate to Level 2 | User comfortable with git basics, less verbosity needed |
 
 ---
 
