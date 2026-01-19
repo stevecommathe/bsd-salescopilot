@@ -5,7 +5,7 @@
 - **What:** Espanso text expander configuration for BSD sales team
 - **Tech:** Espanso (YAML configs) + Python scripts for dynamic lookups
 - **Goal:** Help sales reps quickly respond to common customer questions with consistent, accurate snippets
-- **Repo:** [GitHub URL when created]
+- **Repo:** https://github.com/stevecommathe/bsd-salescopilot
 
 ---
 
@@ -22,22 +22,27 @@
 ## Todo List & Priorities
 
 ### Priority 1 (Do Next)
-- [ ] Create initial base.yml snippets (greetings, signatures, common phrases)
-- [ ] Create initial faq.yml snippets (common customer questions)
+- [ ] Build `;reply` trigger — context-stuffed AI response (proof of concept)
+- [ ] Test AI polish triggers with sales team
 
 ### Priority 2 (Soon)
-- [ ] Set up Python scripts for dynamic lookups (Salesforce integration?)
-- [ ] Test deployment to ~/.config/espanso/match/
+- [ ] Explore RAG approach (vector DB for large knowledge base)
+- [ ] Explore Google Grounding (simpler alternative to RAG)
 - [ ] Document snippet library for sales team
+- [ ] Salesforce data lookups (customer info, order status)
 
 ### Priority 3 (Later)
-- [ ] AI-powered dynamic responses
-- [ ] Salesforce data lookups (customer info, order status)
 - [ ] Team onboarding guide
+- [ ] Multiple tone options (formal, casual, friendly)
 
 ### Completed
 - [x] Set up project folder structure
 - [x] Create CLAUDE.md
+- [x] Create base.yml snippets (`;hi`, `;hello`, `;thanks`, `;sig`)
+- [x] Create faq.yml snippets (10 FAQ responses)
+- [x] Set up symlinks to Espanso config
+- [x] Create AI polish script (`polish.py` with Gemini API)
+- [x] Add AI polish triggers (`;p1`, `;p2`, `;p3`)
 
 ---
 
@@ -116,9 +121,11 @@ Types: feat, fix, docs, refactor
 ```
 bsd-salescopilot/
 ├── match/
-│   ├── base.yml      ← Core snippets (greetings, signatures, common phrases)
-│   └── faq.yml       ← FAQ-based response snippets
-├── scripts/          ← Python scripts for dynamic lookups (Salesforce, AI)
+│   ├── base.yml      ← Core snippets + AI polish triggers
+│   └── faq.yml       ← FAQ-based response snippets (10 triggers)
+├── scripts/
+│   ├── polish.py     ← AI polish script (Gemini API)
+│   └── .env          ← API keys (not committed)
 ├── CLAUDE.md         ← This file
 └── README.md         ← Project documentation
 ```
@@ -195,7 +202,13 @@ matches:
 
 *Issues encountered and their solutions — check here when things break*
 
-(None yet — add as you encounter issues)
+### Gemini API 429 errors (rate limit)
+**Problem:** New API keys or free tier projects return "429 Too Many Requests"
+**Solution:** Use an API key from a project with billing enabled (paid tier). Free tier has very low limits and new keys need warmup time.
+
+### Espanso trigger prefix conflicts
+**Problem:** `;polish` was triggering instead of `;polish3`
+**Solution:** Use non-overlapping trigger names (`;p1`, `;p2`, `;p3` instead of `;polish`, `;polish2`, `;polish3`)
 
 ---
 
@@ -207,6 +220,10 @@ matches:
 | 2026-01-19 | Semicolon prefix for triggers | Avoids accidental triggers, easy to type |
 | 2026-01-19 | Separate base.yml and faq.yml | Organize by snippet type for maintainability |
 | 2026-01-19 | Graduate to Level 2 | User comfortable with git basics, less verbosity needed |
+| 2026-01-19 | Use Gemini API for AI features | Free tier available, user has paid account, cheap (~$0.0001/request) |
+| 2026-01-19 | Short triggers for AI (`;p1`, `;p2`, `;p3`) | Avoid prefix conflicts (`;polish` was catching `;polish3`) |
+| 2026-01-19 | Friendly professional tone for AI | Matches BSD brand voice — warm but business-appropriate |
+| 2026-01-19 | Store API key in .env (gitignored) | Security best practice — keys never committed |
 
 ---
 
@@ -218,27 +235,50 @@ matches:
 | YAML config | Campaign settings file |
 | Python script | Custom function / API call |
 | Symlink | Shortcut / alias |
+| API key | Platform credentials / access token |
+| .env file | Secure config storage (like a password vault) |
+| RAG (Retrieval Augmented Generation) | Dynamic content lookup + AI response |
+| Vector database | Smart search index for AI |
+| Context stuffing | Including reference docs in AI prompt |
 
 ---
 
-## Snippet Ideas to Build
+## Current Snippet Reference
 
-*Parking lot for snippet ideas*
+### base.yml — Core snippets
+| Trigger | Description |
+|---------|-------------|
+| `;hi` | Friendly greeting |
+| `;hello` | Hello + how can I help |
+| `;thanks` | Thank you closing |
+| `;sig` | Email signature block |
+| `;p1` | AI polish (1 option) |
+| `;p2` | AI polish (2 options) |
+| `;p3` | AI polish (3 options) |
 
-### Greetings & Closings
-- [ ] `;hi` — Friendly greeting
-- [ ] `;sig` — Email signature
-- [ ] `;thanks` — Thank you closing
+### faq.yml — FAQ responses
+| Trigger | Description |
+|---------|-------------|
+| `;portal` | Portal access + signup link |
+| `;terms` | Payment terms (20/80 NET14) |
+| `;moq` | MOQ / FCL mixing explanation |
+| `;docs` | Full document list |
+| `;cif` | CIF shipping terms |
+| `;noddp` | No DDP explanation |
+| `;leadtime` | Lead time info (2-3 weeks) |
+| `;nolc` | No LC/Escrow policy |
+| `;locate` | Office locations |
+| `;trust` | Credibility/references response |
 
-### Common Responses
+---
+
+## Snippet Ideas (Backlog)
+
+- [ ] `;reply` — AI-generated response based on knowledge base
 - [ ] `;stock` — Stock availability response
 - [ ] `;ship` — Shipping info
 - [ ] `;return` — Return policy
 - [ ] `;price` — Pricing inquiry response
-
-### FAQ Responses
-- [ ] `;faq1` — [Most common question]
-- [ ] `;faq2` — [Second most common]
 
 ---
 

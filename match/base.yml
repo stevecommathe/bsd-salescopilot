@@ -15,3 +15,31 @@ matches:
       Best regards,
       [Your Name]
       BSD Sales Team
+
+  # AI-powered (copy text first, then use trigger)
+  # ;p1 = 1 polished version
+  # ;p2 = 2 options to choose from
+  # ;p3 = 3 options to choose from
+  - trigger: ";p1"
+    replace: "{{output}}"
+    vars:
+      - name: output
+        type: shell
+        params:
+          cmd: "python3 /Users/stevenhann/Documents/Projects/bsd-salescopilot/scripts/polish.py 1"
+
+  - trigger: ";p2"
+    replace: "{{output}}"
+    vars:
+      - name: output
+        type: shell
+        params:
+          cmd: "python3 /Users/stevenhann/Documents/Projects/bsd-salescopilot/scripts/polish.py 2"
+
+  - trigger: ";p3"
+    replace: "{{output}}"
+    vars:
+      - name: output
+        type: shell
+        params:
+          cmd: "python3 /Users/stevenhann/Documents/Projects/bsd-salescopilot/scripts/polish.py 3"
