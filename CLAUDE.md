@@ -32,6 +32,7 @@
 - [ ] Salesforce data lookups (customer info, order status)
 
 ### Priority 3 (Later)
+- [ ] Explore chatbot options (Chatbase, Botpress, or custom build)
 - [ ] Team onboarding guide
 - [ ] Multiple tone options (formal, casual, friendly)
 
