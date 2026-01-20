@@ -13,9 +13,11 @@
 
 *Claude: Run through this checklist at the start of every new session.*
 
-1. **Confirm git status** — Run `git status` and `git branch`
-2. **Review todo list** — Check Priority 1 items below
-3. **Ask user** — "What would you like to work on today?"
+1. **Check central learnings** — Read `~/Documents/Projects/LEARNINGS.md` for cross-project knowledge
+2. **Check progress & coach** — Read `~/Documents/Projects/CLAUDE-PROGRESS.md`, note level, provide one tip
+3. **Confirm git status** — Run `git status` and `git branch`
+4. **Review todo list** — Check Priority 1 items below
+5. **Ask user** — "What would you like to work on today?"
 
 ---
 
