@@ -46,3 +46,14 @@ matches:
         type: shell
         params:
           cmd: "python3 /Users/stevenhann/Documents/Projects/bsd-salescopilot/scripts/polish.py 3"
+
+  # AI-powered reply (copy customer question first, then use trigger)
+  # ;reply = Generate response based on knowledge base
+  - trigger: ";reply"
+    replace: "{{output}}"
+    force_mode: keys
+    vars:
+      - name: output
+        type: shell
+        params:
+          cmd: "python3 /Users/stevenhann/Documents/Projects/bsd-salescopilot/scripts/reply.py"
