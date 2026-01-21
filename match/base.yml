@@ -22,6 +22,7 @@ matches:
   # ;p3 = 3 options to choose from
   - trigger: ";p1"
     replace: "{{output}}"
+    force_mode: keys
     vars:
       - name: output
         type: shell
@@ -30,6 +31,7 @@ matches:
 
   - trigger: ";p2"
     replace: "{{output}}"
+    force_mode: keys
     vars:
       - name: output
         type: shell
@@ -38,6 +40,7 @@ matches:
 
   - trigger: ";p3"
     replace: "{{output}}"
+    force_mode: keys
     vars:
       - name: output
         type: shell
