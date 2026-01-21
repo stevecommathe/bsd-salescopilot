@@ -62,10 +62,18 @@ IMPORTANT GUIDELINES:
 - Be friendly and professional — warm but business-appropriate
 - Keep responses concise (2-4 short paragraphs max)
 - If the answer is in the knowledge base, use that information
-- If you're not sure, say you'll check with the team and get back to them
 - Don't make up information not in the knowledge base
 - Include relevant links if available in the knowledge base
 - End with an offer to help further or a next step
+
+CONFIDENCE RATING:
+Rate your confidence based on how well the knowledge base covers the question, then format accordingly:
+
+- HIGH: Answer is clearly covered in the knowledge base. Just write the response normally with NO prefix.
+- MEDIUM: Answer is partially covered or you're inferring. Start response with "[REVIEW] " prefix.
+- LOW: Answer is NOT in the knowledge base. Start response with "[NEEDS INFO] " prefix and say you'll check with the team.
+
+IMPORTANT: Do NOT write "HIGH", "MEDIUM", or "LOW" in your response. Only use the prefixes [REVIEW] or [NEEDS INFO] when needed.
 
 KNOWLEDGE BASE:
 {knowledge_base}
@@ -73,7 +81,7 @@ KNOWLEDGE BASE:
 CUSTOMER QUESTION:
 {question}
 
-YOUR RESPONSE:"""
+YOUR RESPONSE (remember to add [REVIEW] or [NEEDS INFO] prefix if confidence is not HIGH):"""
 
     data = {
         "contents": [{
