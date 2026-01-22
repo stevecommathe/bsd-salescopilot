@@ -184,7 +184,7 @@ def log_usage(trigger, question=None, response=None, confidence=None, config=Non
     log_local(log_entry)
 
 
-def log_gap(question, confidence, config=None):
+def log_gap(question, confidence, topic=None, config=None):
     """
     Log a knowledge gap locally
     Only logs MEDIUM and LOW confidence questions
@@ -193,6 +193,7 @@ def log_gap(question, confidence, config=None):
     Args:
         question: The question that had low/medium confidence
         confidence: MEDIUM or LOW
+        topic: AI-extracted topic for categorization (e.g., "return-policy")
         config: Config dict (will load if not provided)
     """
     if confidence not in ("MEDIUM", "LOW"):
@@ -208,23 +209,38 @@ def log_gap(question, confidence, config=None):
         "status": "new",
     }
 
+    if topic:
+        gap_entry["topic"] = topic[:100]  # Limit topic length
+
     # Log locally (fast, ~1ms)
     log_local(gap_entry)
 
 
 def parse_confidence(response_text):
     """
-    Parse confidence level from AI response
-    Returns tuple of (confidence, cleaned_response)
+    Parse confidence level and topic from AI response
+    Returns tuple of (confidence, topic, cleaned_response)
     """
     response = response_text.strip()
+    topic = None
 
+    # Extract topic from end of response (TOPIC: some-topic)
+    lines = response.split('\n')
+    for i, line in enumerate(lines):
+        if line.strip().upper().startswith('TOPIC:'):
+            topic = line.split(':', 1)[1].strip().lower().replace(' ', '-').strip('[]')
+            # Remove the topic line from response
+            lines = lines[:i]
+            response = '\n'.join(lines).strip()
+            break
+
+    # Parse confidence prefix
     if response.startswith("[NEEDS INFO]"):
-        return "LOW", response[len("[NEEDS INFO]"):].strip()
+        return "LOW", topic, response[len("[NEEDS INFO]"):].strip()
     elif response.startswith("[REVIEW]"):
-        return "MEDIUM", response[len("[REVIEW]"):].strip()
+        return "MEDIUM", topic, response[len("[REVIEW]"):].strip()
     else:
-        return "HIGH", response
+        return "HIGH", topic, response
 
 
 def get_project_dir():

@@ -44,6 +44,11 @@ def sync_to_supabase(entries, config, verbose=False):
         entry_type = entry.pop("type", "usage")
         table = "gaps" if entry_type == "gap" else "usage_logs"
 
+        # Handle field mapping for gaps table
+        if table == "gaps" and "timestamp" in entry:
+            entry["first_seen"] = entry.pop("timestamp")
+            entry["last_seen"] = entry["first_seen"]
+
         try:
             url = f"{supabase_url}/rest/v1/{table}"
             req = Request(

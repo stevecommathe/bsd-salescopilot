@@ -59,6 +59,12 @@ Rate your confidence based on how well the knowledge base covers the question, t
 
 IMPORTANT: Do NOT write "HIGH", "MEDIUM", or "LOW" in your response. Only use the prefixes [REVIEW] or [NEEDS INFO] when needed.
 
+TOPIC EXTRACTION:
+At the very END of your response, on a new line, add:
+TOPIC: [short-topic-slug]
+
+The topic should be a 2-4 word lowercase slug describing the question category (e.g., "return-policy", "shipping-times", "payment-terms", "product-availability", "order-tracking", "pricing", "moq-requirements"). This helps us categorize questions for knowledge base improvements.
+
 KNOWLEDGE BASE:
 {knowledge_base}
 
@@ -121,8 +127,8 @@ def main():
     # Generate reply
     raw_reply = generate_reply(question, knowledge_base, api_key)
 
-    # Parse confidence and clean response
-    confidence, reply = parse_confidence(raw_reply)
+    # Parse confidence, topic, and clean response
+    confidence, topic, reply = parse_confidence(raw_reply)
 
     # Log usage (non-blocking)
     log_usage(
@@ -135,7 +141,7 @@ def main():
 
     # Log gap if low/medium confidence
     if confidence in ("MEDIUM", "LOW"):
-        log_gap(question, confidence, config)
+        log_gap(question, confidence, topic, config)
 
     # Output the response (keep prefix for user visibility)
     print(raw_reply)
