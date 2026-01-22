@@ -6,7 +6,7 @@
 - **Tech:** Espanso (YAML configs) + Python scripts + GitHub auto-sync
 - **Goal:** Help sales reps quickly respond to common customer questions with consistent, accurate snippets
 - **Target:** 15 concurrent users (Mac + Windows)
-- **Repo:** https://github.com/stevecommathe/bsd-salescopilot (migrating to BSD org)
+- **Repo:** https://github.com/Black-Sand-Distribution/bsd-salescopilot
 
 ---
 
@@ -40,7 +40,7 @@
                                     ▼
 ┌─────────────────────────────────────────────────────────────────────────┐
 │                         GitHub (Source of Truth)                         │
-│  stevecommathe/bsd-salescopilot (will migrate to BSD org)               │
+│  Black-Sand-Distribution/bsd-salescopilot                               │
 │  • match/base.yml, faq.yml                                              │
 │  • scripts/*.py                                                          │
 │  • knowledge/faq.md                                                      │

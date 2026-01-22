@@ -25,7 +25,7 @@ ERROR_LOG = os.path.join(LOG_DIR, "errors.log")
 
 # Default config (can be overridden in config.json)
 DEFAULT_CONFIG = {
-    "github_repo": "stevecommathe/bsd-salescopilot",
+    "github_repo": "Black-Sand-Distribution/bsd-salescopilot",
     "github_branch": "main",
     "sync_enabled": True,
     "files_to_sync": [

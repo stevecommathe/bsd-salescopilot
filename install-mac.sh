@@ -171,8 +171,8 @@ if [ ! -f "$CONFIG_FILE" ]; then
     read -p "  Supabase URL: " SUPABASE_URL
     read -p "  Supabase anon key: " SUPABASE_KEY
 
-    # GitHub repo settings (change this when migrating to BSD repo)
-    GITHUB_REPO="stevecommathe/bsd-salescopilot"
+    # GitHub repo settings
+    GITHUB_REPO="Black-Sand-Distribution/bsd-salescopilot"
     GITHUB_BRANCH="main"
 
     # Create config file
