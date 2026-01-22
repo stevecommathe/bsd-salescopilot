@@ -1,28 +1,45 @@
 matches:
-  # Greetings
+  # Greetings (logged)
   - trigger: ";hi"
-    replace: "Hi there, thanks for reaching out!"
+    replace: "{{output}}"
+    vars:
+      - name: output
+        type: shell
+        params:
+          cmd: "python3 \"$BSD_COPILOT_PATH/scripts/log_snippet.py\" \";hi\" \"Hi there, thanks for reaching out!\""
 
   - trigger: ";hello"
-    replace: "Hello! Thanks for contacting BSD. How can I help you today?"
+    replace: "{{output}}"
+    vars:
+      - name: output
+        type: shell
+        params:
+          cmd: "python3 \"$BSD_COPILOT_PATH/scripts/log_snippet.py\" \";hello\" \"Hello! Thanks for contacting BSD. How can I help you today?\""
 
-  # Closings
+  # Closings (logged)
   - trigger: ";thanks"
-    replace: "Thanks so much, and please don't hesitate to reach out if you have any other questions!"
+    replace: "{{output}}"
+    vars:
+      - name: output
+        type: shell
+        params:
+          cmd: "python3 \"$BSD_COPILOT_PATH/scripts/log_snippet.py\" \";thanks\" \"Thanks so much, and please don't hesitate to reach out if you have any other questions!\""
 
   - trigger: ";sig"
-    replace: |
-      Best regards,
-      [Your Name]
-      BSD Sales Team
+    replace: "{{output}}"
+    vars:
+      - name: output
+        type: shell
+        params:
+          cmd: |
+            python3 "$BSD_COPILOT_PATH/scripts/log_snippet.py" ";sig" "Best regards,
+            [Your Name]
+            BSD Sales Team"
 
   # AI-powered polish (copy text first, then use trigger)
   # ;p1 = 1 polished version
   # ;p2 = 2 options to choose from
   # ;p3 = 3 options to choose from
-  #
-  # Note: $BSD_COPILOT_PATH must be set in your shell profile
-  # The installer handles this automatically
 
   - trigger: ";p1"
     replace: "{{output}}"

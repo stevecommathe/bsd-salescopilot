@@ -173,7 +173,32 @@ EOF
     echo -e "${GREEN}✓ Config saved to $CONFIG_FILE${NC}"
 fi
 
-# --- Step 8: Restart Espanso ---
+# --- Step 8: Set up background sync ---
+echo ""
+echo "Setting up background log sync..."
+
+# Create logs directory
+mkdir -p "$COPILOT_PATH/scripts/.logs"
+
+# Install launchd plist
+PLIST_TEMPLATE="$COPILOT_PATH/install/com.bsd.salescopilot.sync.plist"
+PLIST_TARGET="$HOME/Library/LaunchAgents/com.bsd.salescopilot.sync.plist"
+
+if [ -f "$PLIST_TEMPLATE" ]; then
+    # Replace placeholder with actual path
+    sed "s|__BSD_COPILOT_PATH__|$COPILOT_PATH|g" "$PLIST_TEMPLATE" > "$PLIST_TARGET"
+
+    # Unload if already loaded (ignore errors)
+    launchctl unload "$PLIST_TARGET" 2>/dev/null || true
+
+    # Load the plist
+    launchctl load "$PLIST_TARGET"
+    echo -e "${GREEN}  ✓ Background sync installed (runs every 5 minutes)${NC}"
+else
+    echo -e "${YELLOW}  Warning: Plist template not found, skipping background sync${NC}"
+fi
+
+# --- Step 9: Restart Espanso ---
 echo ""
 echo "Restarting Espanso..."
 espanso restart

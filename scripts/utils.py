@@ -10,8 +10,9 @@ import json
 import os
 import sys
 from datetime import datetime
-from urllib.request import Request, urlopen
-from urllib.error import URLError, HTTPError
+
+# Local-first logging
+from local_log import log_local
 
 # Resolve paths relative to this file
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -143,7 +144,8 @@ def load_config():
 
 def log_usage(trigger, question=None, response=None, confidence=None, config=None):
     """
-    Log usage to Supabase (non-blocking, fails silently)
+    Log usage locally (fast, reliable)
+    Background sync process pushes to Supabase
 
     Args:
         trigger: The Espanso trigger used (e.g., ";reply", ";p1")
@@ -155,18 +157,16 @@ def log_usage(trigger, question=None, response=None, confidence=None, config=Non
     if config is None:
         config = load_config()
 
-    # Skip if logging disabled or Supabase not configured
+    # Skip if logging disabled
     if not config.get("log_usage"):
-        return
-    if not config.get("supabase_url") or not config.get("supabase_anon_key"):
         return
 
     # Build log entry
     log_entry = {
+        "type": "usage",
         "trigger": trigger,
         "user_id": config.get("user_id", "unknown"),
         "os": get_os(),
-        "timestamp": datetime.utcnow().isoformat() + "Z",
     }
 
     # Only include question/response if configured
@@ -180,30 +180,15 @@ def log_usage(trigger, question=None, response=None, confidence=None, config=Non
     if confidence:
         log_entry["confidence"] = confidence
 
-    # Send to Supabase (fire and forget)
-    try:
-        url = f"{config['supabase_url']}/rest/v1/usage_logs"
-        req = Request(
-            url,
-            data=json.dumps(log_entry).encode("utf-8"),
-            headers={
-                "Content-Type": "application/json",
-                "apikey": config["supabase_anon_key"],
-                "Authorization": f"Bearer {config['supabase_anon_key']}",
-                "Prefer": "return=minimal",  # Don't need response body
-            },
-            method="POST"
-        )
-        urlopen(req, timeout=5)
-    except (URLError, HTTPError, Exception):
-        # Fail silently - logging should never break the main function
-        pass
+    # Log locally (fast, ~1ms)
+    log_local(log_entry)
 
 
 def log_gap(question, confidence, config=None):
     """
-    Log a knowledge gap to Supabase gaps table
+    Log a knowledge gap locally
     Only logs MEDIUM and LOW confidence questions
+    Background sync pushes to Supabase gaps table
 
     Args:
         question: The question that had low/medium confidence
@@ -216,32 +201,15 @@ def log_gap(question, confidence, config=None):
     if config is None:
         config = load_config()
 
-    if not config.get("supabase_url") or not config.get("supabase_anon_key"):
-        return
-
     gap_entry = {
+        "type": "gap",
         "question": question[:500] if len(question) > 500 else question,
         "confidence": confidence,
         "status": "new",
-        "first_seen": datetime.utcnow().isoformat() + "Z",
     }
 
-    try:
-        url = f"{config['supabase_url']}/rest/v1/gaps"
-        req = Request(
-            url,
-            data=json.dumps(gap_entry).encode("utf-8"),
-            headers={
-                "Content-Type": "application/json",
-                "apikey": config["supabase_anon_key"],
-                "Authorization": f"Bearer {config['supabase_anon_key']}",
-                "Prefer": "return=minimal",
-            },
-            method="POST"
-        )
-        urlopen(req, timeout=5)
-    except (URLError, HTTPError, Exception):
-        pass
+    # Log locally (fast, ~1ms)
+    log_local(gap_entry)
 
 
 def parse_confidence(response_text):

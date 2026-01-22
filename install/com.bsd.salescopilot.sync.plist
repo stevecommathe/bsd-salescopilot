@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.bsd.salescopilot.sync</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <string>/usr/bin/python3</string>
+        <string>__BSD_COPILOT_PATH__/scripts/sync_logs.py</string>
+        <string>--verbose</string>
+    </array>
+
+    <key>StartInterval</key>
+    <integer>300</integer>
+
+    <key>RunAtLoad</key>
+    <true/>
+
+    <key>StandardOutPath</key>
+    <string>__BSD_COPILOT_PATH__/scripts/.logs/sync.log</string>
+
+    <key>StandardErrorPath</key>
+    <string>__BSD_COPILOT_PATH__/scripts/.logs/sync.log</string>
+
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>BSD_COPILOT_PATH</key>
+        <string>__BSD_COPILOT_PATH__</string>
+    </dict>
+</dict>
+</plist>
