@@ -124,8 +124,9 @@
 
 ### Phase 2: Windows + Analytics
 - [ ] Create Windows installer (`install-windows.ps1`)
-- [ ] Set up Supabase project
-- [ ] Run `db/supabase-setup.sql`
+- [x] Set up Supabase project (bsd-salescopilot)
+- [x] Run `db/supabase-setup.sql`
+- [x] Add topic extraction to gaps for categorization
 - [ ] Create analytics script (`analytics.py`)
 - [ ] Build Vercel dashboard (basic usage view)
 
