@@ -5,5 +5,9 @@
   "supabase_anon_key": "YOUR_SUPABASE_ANON_KEY_HERE",
   "log_usage": true,
   "log_responses": false,
-  "user_id": "user_machine_name"
+  "user_id": "user_machine_name",
+
+  "github_repo": "stevecommathe/bsd-salescopilot",
+  "github_branch": "main",
+  "sync_enabled": true
 }

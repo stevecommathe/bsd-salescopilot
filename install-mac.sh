@@ -171,6 +171,10 @@ if [ ! -f "$CONFIG_FILE" ]; then
     read -p "  Supabase URL: " SUPABASE_URL
     read -p "  Supabase anon key: " SUPABASE_KEY
 
+    # GitHub repo settings (change this when migrating to BSD repo)
+    GITHUB_REPO="stevecommathe/bsd-salescopilot"
+    GITHUB_BRANCH="main"
+
     # Create config file
     cat > "$CONFIG_FILE" << EOF
 {
@@ -180,36 +184,46 @@ if [ ! -f "$CONFIG_FILE" ]; then
   "supabase_anon_key": "$SUPABASE_KEY",
   "log_usage": true,
   "log_responses": false,
-  "user_id": "$USER_ID"
+  "user_id": "$USER_ID",
+  "github_repo": "$GITHUB_REPO",
+  "github_branch": "$GITHUB_BRANCH",
+  "sync_enabled": true
 }
 EOF
     echo -e "${GREEN}✓ Config saved to $CONFIG_FILE${NC}"
 fi
 
-# --- Step 8: Set up background sync ---
+# --- Step 8: Set up background services ---
 echo ""
-echo "Setting up background log sync..."
+echo "Setting up background services..."
 
-# Create logs directory
+# Create logs directories
 mkdir -p "$COPILOT_PATH/scripts/.logs"
+mkdir -p "$HOME/Library/Logs/BSDSalesCopilot"
 
-# Install launchd plist
+# --- 8a: Log sync (local logs to Supabase) ---
 PLIST_TEMPLATE="$COPILOT_PATH/install/com.bsd.salescopilot.sync.plist"
 PLIST_TARGET="$HOME/Library/LaunchAgents/com.bsd.salescopilot.sync.plist"
 
 if [ -f "$PLIST_TEMPLATE" ]; then
-    # Replace placeholder with actual path
     sed "s|__BSD_COPILOT_PATH__|$COPILOT_PATH|g" "$PLIST_TEMPLATE" > "$PLIST_TARGET"
-
-    # Unload if already loaded (ignore errors)
     launchctl unload "$PLIST_TARGET" 2>/dev/null || true
-
-    # Load the plist
     launchctl load "$PLIST_TARGET"
-    echo -e "${GREEN}  ✓ Background sync installed (runs every 5 minutes)${NC}"
-else
-    echo -e "${YELLOW}  Warning: Plist template not found, skipping background sync${NC}"
+    echo -e "${GREEN}  ✓ Log sync service installed${NC}"
 fi
+
+# --- 8b: Snippet sync (GitHub to local) ---
+SNIPPET_PLIST_TEMPLATE="$COPILOT_PATH/install/com.bsd.salescopilot.snippetsync.plist"
+SNIPPET_PLIST_TARGET="$HOME/Library/LaunchAgents/com.bsd.salescopilot.snippetsync.plist"
+
+if [ -f "$SNIPPET_PLIST_TEMPLATE" ]; then
+    sed -e "s|__BSD_COPILOT_PATH__|$COPILOT_PATH|g" -e "s|__HOME__|$HOME|g" "$SNIPPET_PLIST_TEMPLATE" > "$SNIPPET_PLIST_TARGET"
+    launchctl unload "$SNIPPET_PLIST_TARGET" 2>/dev/null || true
+    launchctl load "$SNIPPET_PLIST_TARGET"
+    echo -e "${GREEN}  ✓ Snippet sync service installed (updates from GitHub every 5 min)${NC}"
+fi
+
+echo -e "${GREEN}  ✓ Logs will be written to ~/Library/Logs/BSDSalesCopilot/${NC}"
 
 # --- Step 9: Restart Espanso ---
 echo ""
@@ -235,4 +249,9 @@ echo "  ;reply   - AI reply from knowledge base"
 echo ""
 echo "To test, copy some text and type ;p1 in any app."
 echo ""
-echo -e "${YELLOW}Note: Open a new terminal window for the environment variable to take effect.${NC}"
+echo "Background services:"
+echo "  • Snippets auto-update from GitHub every 5 minutes"
+echo "  • Usage logs sync to Supabase (if configured)"
+echo "  • Logs: ~/Library/Logs/BSDSalesCopilot/"
+echo ""
+echo -e "${YELLOW}Note: Snippets will update automatically. No action needed!${NC}"
