@@ -36,6 +36,87 @@ matches:
             [Your Name]
             BSD Sales Team"
 
+  # Sales closings - action-oriented next steps (logged)
+  - trigger: ";next"
+    replace: "{{output}}"
+    vars:
+      - name: output
+        type: shell
+        params:
+          cmd: "python3 \"$BSD_COPILOT_PATH/scripts/log_snippet.py\" \";next\" \"What brands are you most interested in? I'll connect you with a dedicated account manager.\""
+
+  - trigger: ";call"
+    replace: "{{output}}"
+    vars:
+      - name: output
+        type: shell
+        params:
+          cmd: "python3 \"$BSD_COPILOT_PATH/scripts/log_snippet.py\" \";call\" \"Happy to jump on a quick call if that helps - just let me know a good time.\""
+
+  - trigger: ";quote"
+    replace: "{{output}}"
+    vars:
+      - name: output
+        type: shell
+        params:
+          cmd: "python3 \"$BSD_COPILOT_PATH/scripts/log_snippet.py\" \";quote\" \"Let me know your destination port and brands of interest, and I can get you a CIF quote.\""
+
+  - trigger: ";timeline"
+    replace: "{{output}}"
+    vars:
+      - name: output
+        type: shell
+        params:
+          cmd: "python3 \"$BSD_COPILOT_PATH/scripts/log_snippet.py\" \";timeline\" \"What's your timeline for the first order?\""
+
+  - trigger: ";volume"
+    replace: "{{output}}"
+    vars:
+      - name: output
+        type: shell
+        params:
+          cmd: "python3 \"$BSD_COPILOT_PATH/scripts/log_snippet.py\" \";volume\" \"What kind of volume are you looking at per brand?\""
+
+  - trigger: ";ready"
+    replace: "{{output}}"
+    vars:
+      - name: output
+        type: shell
+        params:
+          cmd: "python3 \"$BSD_COPILOT_PATH/scripts/log_snippet.py\" \";ready\" \"Are you ready to place an order, or is there anything else I can help clarify?\""
+
+  - trigger: ";deposit"
+    replace: "{{output}}"
+    vars:
+      - name: output
+        type: shell
+        params:
+          cmd: "python3 \"$BSD_COPILOT_PATH/scripts/log_snippet.py\" \";deposit\" \"Once you're ready, I can send over a pro forma invoice. Just confirm the products and quantities and we'll get that sorted.\""
+
+  - trigger: ";followup"
+    replace: "{{output}}"
+    vars:
+      - name: output
+        type: shell
+        params:
+          cmd: "python3 \"$BSD_COPILOT_PATH/scripts/log_snippet.py\" \";followup\" \"Just following up on this - let me know if you have any questions or if you're ready to move forward.\""
+
+  - trigger: ";intro"
+    replace: "{{output}}"
+    vars:
+      - name: output
+        type: shell
+        params:
+          cmd: "python3 \"$BSD_COPILOT_PATH/scripts/log_snippet.py\" \";intro\" \"I'll connect you with a dedicated account manager who can help you further. They'll be in touch shortly.\""
+
+  - trigger: ";check"
+    replace: "{{output}}"
+    vars:
+      - name: output
+        type: shell
+        params:
+          cmd: "python3 \"$BSD_COPILOT_PATH/scripts/log_snippet.py\" \";check\" \"Let me check with the team on that and get back to you.\""
+
   # AI-powered polish (copy text first, then use trigger)
   # ;p1 = 1 polished version
   # ;p2 = 2 options to choose from
@@ -69,7 +150,8 @@ matches:
           cmd: "python3 \"$BSD_COPILOT_PATH/scripts/polish.py\" 3"
 
   # AI-powered reply (copy customer question first, then use trigger)
-  # ;reply = Generate response based on knowledge base
+  # ;reply = Generate response (no closing CTA - for mid-funnel)
+  # ;replyclose = Generate response WITH closing CTA (for qualifying/early funnel)
   - trigger: ";reply"
     replace: "{{output}}"
     force_mode: keys
@@ -78,3 +160,12 @@ matches:
         type: shell
         params:
           cmd: "python3 \"$BSD_COPILOT_PATH/scripts/reply.py\""
+
+  - trigger: ";replyclose"
+    replace: "{{output}}"
+    force_mode: keys
+    vars:
+      - name: output
+        type: shell
+        params:
+          cmd: "python3 \"$BSD_COPILOT_PATH/scripts/reply.py\" --close"

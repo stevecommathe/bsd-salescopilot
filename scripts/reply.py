@@ -35,43 +35,90 @@ def load_knowledge_base():
         return f.read(), kb_path
 
 
-def generate_reply(question, knowledge_base, api_key):
+def generate_reply(question, knowledge_base, api_key, include_close=False):
     """Send question + knowledge base to Gemini API"""
     url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key={api_key}"
 
-    prompt = f"""You are a helpful sales representative for BSD (Black Sands Distribution).
-Use the knowledge base below to answer the customer's question.
+    # Build prompt based on whether closing CTA is wanted
+    close_instruction = ""
+    if include_close:
+        close_instruction = """
+CLOSING:
+- End with a sales-focused call-to-action (ask for brands, port, timeline, or offer a call)
+- Examples: "What brands are you interested in?", "What's your destination port?", "Happy to jump on a call if that helps"
+"""
+    else:
+        close_instruction = """
+CLOSING - CRITICAL:
+- Do NOT end with a question
+- Do NOT ask for brands, port, volume, timeline, or anything else
+- Do NOT add any call-to-action
+- Just answer the question warmly and STOP
+- The sales rep will add their own follow-up manually
+- Example of what NOT to do: "What brands are you interested in?" or "Let me know your port"
+"""
 
-IMPORTANT GUIDELINES:
-- Be friendly and professional — warm but business-appropriate
-- Keep responses concise (2-4 short paragraphs max)
-- If the answer is in the knowledge base, use that information
-- Don't make up information not in the knowledge base
-- Include relevant links if available in the knowledge base
-- End with an offer to help further or a next step
+    prompt = f"""You are a sales representative for BSD (Black Sands Distribution) responding on WhatsApp.
 
+TONE & STYLE:
+- Warm, friendly, and conversational - like texting a colleague
+- Keep messages SHORT (this is WhatsApp, not email) but not cold or robotic
+- Add small human touches like "absolutely", "definitely", "happy to help", "great question"
+- Never sound like a chatbot or reference internal systems
+
+RESPONSE FORMAT:
+- ALWAYS start with "Hi" or "Hi there" (never skip the greeting)
+- 1-3 short paragraphs MAX
+- Be helpful and warm, even when the answer is short
+{close_instruction}
 CONFIDENCE RATING:
-Rate your confidence based on how well the knowledge base covers the question, then format accordingly:
+- If you can answer confidently from the reference info: Just start with "Hi" normally (NO prefix needed)
+- If you're partially inferring or unsure: Start with "[REVIEW] Hi there," (prefix BEFORE greeting)
+- If the topic is NOT covered: Start with "[NEEDS INFO] Hi there," then say "Let me check with the team"
 
-- HIGH: Answer is clearly covered in the knowledge base. Just write the response normally with NO prefix.
-- MEDIUM: Answer is partially covered or you're inferring. Start response with "[REVIEW] " prefix.
-- LOW: Answer is NOT in the knowledge base. Start response with "[NEEDS INFO] " prefix and say you'll check with the team.
+PREFIX RULES:
+- NEVER write "[HIGH]" - just start with "Hi" for confident answers
+- Only use "[REVIEW] " or "[NEEDS INFO] " prefixes
+- Prefix MUST be the very first characters: "[REVIEW] Hi there," NOT "Hi there, [REVIEW]"
 
-IMPORTANT: Do NOT write "HIGH", "MEDIUM", or "LOW" in your response. Only use the prefixes [REVIEW] or [NEEDS INFO] when needed.
+CRITICAL - DO NOT HALLUCINATE:
+- If a product category, service, or policy is NOT explicitly mentioned in the reference info, do NOT guess yes or no
+- This MUST be marked as LOW confidence with the "[NEEDS INFO] " prefix
+- It's BETTER to say "I'll confirm" than to guess wrong
+- NEVER pretend you received an email, saw a message, or have information you don't have
 
-TOPIC EXTRACTION:
+NON-QUESTION MESSAGES:
+- If the customer is just informing you of something (e.g., "my colleague emailed you", "I'll get back to you tomorrow")
+- Respond with a brief acknowledgment like "Thanks for letting me know!" or "Great, looking forward to it!"
+- Do NOT pretend you received or saw something you didn't
+
+IMPORTANT:
+- Do NOT write the words "HIGH", "MEDIUM", or "LOW" in your response
+- But you MUST use "[REVIEW] " or "[NEEDS INFO] " prefixes when confidence is not high
+
+NEVER:
+- Say "knowledge base", "database", "system", or "information I have"
+- Quote specific dollar amounts (direct to portal for pricing)
+- Sound like a chatbot or AI
+- Make up information that isn't in the reference info
+
+ALWAYS:
+- Mention the portal (blacksanddistribution.com) for pricing/product details when relevant
+- Offer to connect them with a dedicated account manager for complex questions
+
+TOPIC EXTRACTION (for internal use):
 At the very END of your response, on a new line, add:
-TOPIC: [short-topic-slug]
+TOPIC: short-topic-slug
 
-The topic should be a 2-4 word lowercase slug describing the question category (e.g., "return-policy", "shipping-times", "payment-terms", "product-availability", "order-tracking", "pricing", "moq-requirements"). This helps us categorize questions for knowledge base improvements.
+The topic should be a 2-4 word lowercase slug (e.g., "return-policy", "shipping-terms", "payment-terms", "moq-requirements").
 
-KNOWLEDGE BASE:
+REFERENCE INFORMATION:
 {knowledge_base}
 
-CUSTOMER QUESTION:
+CUSTOMER MESSAGE:
 {question}
 
-YOUR RESPONSE (remember to add [REVIEW] or [NEEDS INFO] prefix if confidence is not HIGH):"""
+YOUR RESPONSE:"""
 
     data = {
         "contents": [{
@@ -104,6 +151,11 @@ YOUR RESPONSE (remember to add [REVIEW] or [NEEDS INFO] prefix if confidence is 
 
 
 def main():
+    import sys
+
+    # Check for --close flag
+    include_close = "--close" in sys.argv
+
     # Load configuration
     config = load_config()
     api_key = config.get("gemini_api_key")
@@ -125,7 +177,7 @@ def main():
         return
 
     # Generate reply
-    raw_reply = generate_reply(question, knowledge_base, api_key)
+    raw_reply = generate_reply(question, knowledge_base, api_key, include_close)
 
     # Parse confidence, topic, and clean response
     confidence, topic, reply = parse_confidence(raw_reply)
@@ -143,8 +195,13 @@ def main():
     if confidence in ("MEDIUM", "LOW"):
         log_gap(question, confidence, topic, config)
 
-    # Output the response (keep prefix for user visibility)
-    print(raw_reply)
+    # Output the cleaned response (TOPIC stripped, prefix kept for user visibility)
+    if confidence == "HIGH":
+        print(reply)
+    else:
+        # Re-add the prefix for user to see
+        prefix = "[NEEDS INFO] " if confidence == "LOW" else "[REVIEW] "
+        print(prefix + reply)
 
 
 if __name__ == "__main__":

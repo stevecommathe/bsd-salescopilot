@@ -34,8 +34,8 @@ If they've signed up but can't access:
 **Q: What is your best price? Give me your best price**
 
 - Pricing on the portal is our "FCL" (Full Container Load) pricing
-- We may be able to provide discount based on volume (multiple FCLs)
-- For first orders, we might be able to offer $500 off
+- We may be able to provide a discount based on volume (multiple FCLs)
+- For first orders, we may be able to offer a discount - speak with your account manager
 
 ---
 
@@ -265,17 +265,6 @@ purchasing@blacksanddistribution.com
 **Q: Do you currently work with anyone in X market?**
 
 Customer and supplier details are confidential. However, we cover all major markets globally and generally only work with leading importers, distributors, and retailers in any given market.
-
----
-
-## INTERNAL NOTES (Not for customer responses)
-
-These are internal processes — do not share with customers:
-
-- Portal approval: Check Airtable for approval status
-- Resend account invite: Go to Shopify > Customers > Enter email > Resend invite
-- Origin port questions: Ask sales team or check internal docs
-- Category access: Activate in Airtable after customer requests
 
 ---
 
