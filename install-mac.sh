@@ -125,6 +125,19 @@ fi
 # Export for current session
 export BSD_COPILOT_PATH="$COPILOT_PATH"
 
+# Set for GUI apps (Espanso needs this)
+launchctl setenv BSD_COPILOT_PATH "$COPILOT_PATH"
+
+# Make it persist across reboots
+ENV_PLIST_TEMPLATE="$COPILOT_PATH/install/com.bsd.salescopilot.env.plist"
+ENV_PLIST_TARGET="$HOME/Library/LaunchAgents/com.bsd.salescopilot.env.plist"
+if [ -f "$ENV_PLIST_TEMPLATE" ]; then
+    sed "s|__BSD_COPILOT_PATH__|$COPILOT_PATH|g" "$ENV_PLIST_TEMPLATE" > "$ENV_PLIST_TARGET"
+    launchctl unload "$ENV_PLIST_TARGET" 2>/dev/null || true
+    launchctl load "$ENV_PLIST_TARGET"
+    echo -e "${GREEN}  ✓ Environment variable will persist across reboots${NC}"
+fi
+
 # --- Step 7: Configure API keys ---
 echo ""
 CONFIG_FILE="$COPILOT_PATH/scripts/config.json"
