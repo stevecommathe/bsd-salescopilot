@@ -1,36 +1,25 @@
 #!/usr/bin/env python3
 """
 AI Polish Script - Takes clipboard text and rewrites it professionally
-Uses Google Gemini API (free tier)
+Uses Google Gemini API
+
 Usage: python3 polish.py [num_options]
   - num_options: 1, 2, or 3 (default: 1)
+  - Logs usage to Supabase (if configured)
 """
 
-import subprocess
 import urllib.request
 import json
-import os
 import sys
 import time
 
-def get_api_key():
-    """Get API key from environment or .env file"""
-    key = os.environ.get("GEMINI_API_KEY")
-    if key:
-        return key
+# Import shared utilities
+from utils import (
+    get_clipboard,
+    load_config,
+    log_usage,
+)
 
-    env_path = os.path.join(os.path.dirname(__file__), ".env")
-    if os.path.exists(env_path):
-        with open(env_path) as f:
-            for line in f:
-                if line.startswith("GEMINI_API_KEY="):
-                    return line.strip().split("=", 1)[1]
-    return None
-
-def get_clipboard():
-    """Get text from macOS clipboard"""
-    result = subprocess.run(["pbpaste"], capture_output=True, text=True)
-    return result.stdout.strip()
 
 def polish_text(text, api_key, num_options=1):
     """Send text to Gemini API for polishing"""
@@ -85,12 +74,17 @@ Text to polish:
 
     return "Error: Rate limited. Please try again in a moment."
 
+
 def main():
-    api_key = get_api_key()
+    # Load configuration
+    config = load_config()
+    api_key = config.get("gemini_api_key")
+
     if not api_key:
         print("Error: GEMINI_API_KEY not found")
         return
 
+    # Get text from clipboard (cross-platform)
     clipboard_text = get_clipboard()
     if not clipboard_text:
         print("Error: Clipboard is empty")
@@ -105,8 +99,18 @@ def main():
         except ValueError:
             pass
 
+    # Polish the text
     polished = polish_text(clipboard_text, api_key, num_options)
+
+    # Log usage (non-blocking)
+    log_usage(
+        trigger=f";p{num_options}",
+        question=clipboard_text,
+        config=config
+    )
+
     print(polished)
+
 
 if __name__ == "__main__":
     main()

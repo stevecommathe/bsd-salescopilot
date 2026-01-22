@@ -16,10 +16,14 @@ matches:
       [Your Name]
       BSD Sales Team
 
-  # AI-powered (copy text first, then use trigger)
+  # AI-powered polish (copy text first, then use trigger)
   # ;p1 = 1 polished version
   # ;p2 = 2 options to choose from
   # ;p3 = 3 options to choose from
+  #
+  # Note: $BSD_COPILOT_PATH must be set in your shell profile
+  # The installer handles this automatically
+
   - trigger: ";p1"
     replace: "{{output}}"
     force_mode: keys
@@ -27,7 +31,7 @@ matches:
       - name: output
         type: shell
         params:
-          cmd: "python3 /Users/stevenhann/Documents/Projects/bsd-salescopilot/scripts/polish.py 1"
+          cmd: "python3 \"$BSD_COPILOT_PATH/scripts/polish.py\" 1"
 
   - trigger: ";p2"
     replace: "{{output}}"
@@ -36,7 +40,7 @@ matches:
       - name: output
         type: shell
         params:
-          cmd: "python3 /Users/stevenhann/Documents/Projects/bsd-salescopilot/scripts/polish.py 2"
+          cmd: "python3 \"$BSD_COPILOT_PATH/scripts/polish.py\" 2"
 
   - trigger: ";p3"
     replace: "{{output}}"
@@ -45,7 +49,7 @@ matches:
       - name: output
         type: shell
         params:
-          cmd: "python3 /Users/stevenhann/Documents/Projects/bsd-salescopilot/scripts/polish.py 3"
+          cmd: "python3 \"$BSD_COPILOT_PATH/scripts/polish.py\" 3"
 
   # AI-powered reply (copy customer question first, then use trigger)
   # ;reply = Generate response based on knowledge base
@@ -56,4 +60,4 @@ matches:
       - name: output
         type: shell
         params:
-          cmd: "python3 /Users/stevenhann/Documents/Projects/bsd-salescopilot/scripts/reply.py"
+          cmd: "python3 \"$BSD_COPILOT_PATH/scripts/reply.py\""

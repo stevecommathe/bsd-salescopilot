@@ -7,48 +7,32 @@ Usage: python3 reply.py
   - Reads customer question from clipboard
   - Reads knowledge base from knowledge/faq.md
   - Returns AI-generated response
+  - Logs usage to Supabase (if configured)
 """
 
-import subprocess
 import urllib.request
 import json
 import os
-import sys
 import time
 
-# Path to knowledge base (relative to this script)
-SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-PROJECT_DIR = os.path.dirname(SCRIPT_DIR)
-KNOWLEDGE_BASE_PATH = os.path.join(PROJECT_DIR, "knowledge", "faq.md")
-
-
-def get_api_key():
-    """Get API key from environment or .env file"""
-    key = os.environ.get("GEMINI_API_KEY")
-    if key:
-        return key
-
-    env_path = os.path.join(SCRIPT_DIR, ".env")
-    if os.path.exists(env_path):
-        with open(env_path) as f:
-            for line in f:
-                if line.startswith("GEMINI_API_KEY="):
-                    return line.strip().split("=", 1)[1]
-    return None
-
-
-def get_clipboard():
-    """Get text from macOS clipboard"""
-    result = subprocess.run(["pbpaste"], capture_output=True, text=True)
-    return result.stdout.strip()
+# Import shared utilities
+from utils import (
+    get_clipboard,
+    load_config,
+    log_usage,
+    log_gap,
+    parse_confidence,
+    get_knowledge_base_path,
+)
 
 
 def load_knowledge_base():
     """Load knowledge base content from file"""
-    if not os.path.exists(KNOWLEDGE_BASE_PATH):
-        return None
-    with open(KNOWLEDGE_BASE_PATH, "r") as f:
-        return f.read()
+    kb_path = get_knowledge_base_path()
+    if not os.path.exists(kb_path):
+        return None, kb_path
+    with open(kb_path, "r") as f:
+        return f.read(), kb_path
 
 
 def generate_reply(question, knowledge_base, api_key):
@@ -114,23 +98,47 @@ YOUR RESPONSE (remember to add [REVIEW] or [NEEDS INFO] prefix if confidence is 
 
 
 def main():
-    api_key = get_api_key()
+    # Load configuration
+    config = load_config()
+    api_key = config.get("gemini_api_key")
+
     if not api_key:
         print("Error: GEMINI_API_KEY not found")
         return
 
+    # Get question from clipboard (cross-platform)
     question = get_clipboard()
     if not question:
         print("Error: Clipboard is empty. Copy the customer question first.")
         return
 
-    knowledge_base = load_knowledge_base()
+    # Load knowledge base
+    knowledge_base, kb_path = load_knowledge_base()
     if not knowledge_base:
-        print(f"Error: Knowledge base not found at {KNOWLEDGE_BASE_PATH}")
+        print(f"Error: Knowledge base not found at {kb_path}")
         return
 
-    reply = generate_reply(question, knowledge_base, api_key)
-    print(reply)
+    # Generate reply
+    raw_reply = generate_reply(question, knowledge_base, api_key)
+
+    # Parse confidence and clean response
+    confidence, reply = parse_confidence(raw_reply)
+
+    # Log usage (non-blocking)
+    log_usage(
+        trigger=";reply",
+        question=question,
+        response=reply if config.get("log_responses") else None,
+        confidence=confidence,
+        config=config
+    )
+
+    # Log gap if low/medium confidence
+    if confidence in ("MEDIUM", "LOW"):
+        log_gap(question, confidence, config)
+
+    # Output the response (keep prefix for user visibility)
+    print(raw_reply)
 
 
 if __name__ == "__main__":

@@ -23,22 +23,26 @@
 
 ## Todo List & Priorities
 
-### Priority 1 (Do Next)
-- [ ] Build `;reply` trigger — context-stuffed AI response (proof of concept)
-- [ ] Test AI polish triggers with sales team
+### Priority 1 (Do Next) — Phase 2: Windows + Analytics
+- [ ] Create Windows installer (`install-windows.ps1`)
+- [ ] Set up Supabase project and run SQL setup
+- [ ] Create analytics script (`analytics.py`)
+- [ ] Build Vercel dashboard (basic usage view)
+- [ ] Test with 5 Mac users
 
-### Priority 2 (Soon)
-- [ ] Explore RAG approach (vector DB for large knowledge base)
-- [ ] Explore Google Grounding (simpler alternative to RAG)
-- [ ] Document snippet library for sales team
-- [ ] Salesforce data lookups (customer info, order status)
+### Priority 2 (Soon) — Phase 3: Model Flexibility
+- [ ] Create AI client abstraction (`ai_client.py`)
+- [ ] Add cost tracking to logging
+- [ ] User guide for sales team
+- [ ] Admin guide (KB updates, analytics)
 
 ### Priority 3 (Later)
+- [ ] Explore RAG approach (vector DB for large knowledge base)
 - [ ] Explore chatbot options (Chatbase, Botpress, or custom build)
-- [ ] Team onboarding guide
+- [ ] Salesforce data lookups (customer info, order status)
 - [ ] Multiple tone options (formal, casual, friendly)
 
-### Completed
+### Completed — Phase 1: MVP Foundation
 - [x] Set up project folder structure
 - [x] Create CLAUDE.md
 - [x] Create base.yml snippets (`;hi`, `;hello`, `;thanks`, `;sig`)
@@ -46,6 +50,15 @@
 - [x] Set up symlinks to Espanso config
 - [x] Create AI polish script (`polish.py` with Gemini API)
 - [x] Add AI polish triggers (`;p1`, `;p2`, `;p3`)
+- [x] Build `;reply` trigger with knowledge base
+- [x] Create cross-platform utilities (`utils.py`)
+- [x] Add usage logging to Supabase
+- [x] Add gap detection for low-confidence answers
+- [x] Update base.yml with dynamic `$BSD_COPILOT_PATH`
+- [x] Create config.json structure
+- [x] Create Supabase table definitions (`db/supabase-setup.sql`)
+- [x] Create Mac installer (`install-mac.sh`)
+- [x] Write README documentation
 
 ---
 
@@ -124,13 +137,21 @@ Types: feat, fix, docs, refactor
 ```
 bsd-salescopilot/
 ├── match/
-│   ├── base.yml      ← Core snippets + AI polish triggers
-│   └── faq.yml       ← FAQ-based response snippets (10 triggers)
+│   ├── base.yml          ← Core snippets + AI triggers
+│   └── faq.yml           ← FAQ-based response snippets
 ├── scripts/
-│   ├── polish.py     ← AI polish script (Gemini API)
-│   └── .env          ← API keys (not committed)
-├── CLAUDE.md         ← This file
-└── README.md         ← Project documentation
+│   ├── utils.py          ← Shared utilities (clipboard, logging, config)
+│   ├── reply.py          ← AI reply from knowledge base
+│   ├── polish.py         ← AI text polisher
+│   ├── config.json       ← Configuration (gitignored)
+│   └── config.json.template
+├── knowledge/
+│   └── faq.md            ← Knowledge base for AI responses
+├── db/
+│   └── supabase-setup.sql ← Database schema
+├── install-mac.sh        ← Mac installer
+├── CLAUDE.md             ← This file
+└── README.md             ← Project documentation
 ```
 
 ### Espanso YAML Format
@@ -227,6 +248,11 @@ matches:
 | 2026-01-19 | Short triggers for AI (`;p1`, `;p2`, `;p3`) | Avoid prefix conflicts (`;polish` was catching `;polish3`) |
 | 2026-01-19 | Friendly professional tone for AI | Matches BSD brand voice — warm but business-appropriate |
 | 2026-01-19 | Store API key in .env (gitignored) | Security best practice — keys never committed |
+| 2026-01-22 | Google Drive for team sync | BSD uses Google Workspace; familiar; free |
+| 2026-01-22 | Supabase for logging | Free tier (500MB); REST API; handles concurrent writes |
+| 2026-01-22 | Cross-platform clipboard in utils.py | PowerShell Get-Clipboard for Windows; pbpaste for Mac |
+| 2026-01-22 | config.json for settings | Centralized config; env vars as fallback |
+| 2026-01-22 | $BSD_COPILOT_PATH env var | Dynamic paths for Google Drive locations |
 
 ---
 
@@ -258,6 +284,7 @@ matches:
 | `;p1` | AI polish (1 option) |
 | `;p2` | AI polish (2 options) |
 | `;p3` | AI polish (3 options) |
+| `;reply` | AI reply from knowledge base (copy question first) |
 
 ### faq.yml — FAQ responses
 | Trigger | Description |
@@ -277,7 +304,6 @@ matches:
 
 ## Snippet Ideas (Backlog)
 
-- [ ] `;reply` — AI-generated response based on knowledge base
 - [ ] `;stock` — Stock availability response
 - [ ] `;ship` — Shipping info
 - [ ] `;return` — Return policy
@@ -285,4 +311,4 @@ matches:
 
 ---
 
-*Last updated: 2026-01-19*
+*Last updated: 2026-01-22*
