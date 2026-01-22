@@ -13,3 +13,10 @@ __pycache__/
 # Logs (local-first logging)
 logs/
 scripts/.logs/
+credentials.env
+
+# Distribution (contains baked credentials)
+dist/
+
+# Supabase CLI temp files
+supabase/.temp/
