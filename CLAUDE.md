@@ -113,9 +113,12 @@
 ## Todo List & Priorities
 
 ### Immediate (Before Team Rollout)
-- [ ] Create BSD GitHub repo (public)
-- [ ] Push code to BSD repo
-- [ ] Update `github_repo` in install-mac.sh
+- [x] Create BSD GitHub repo (public)
+- [x] Push code to BSD repo
+- [x] Update `github_repo` in configs
+- [x] Create installer apps (.app bundles)
+- [x] Create uninstaller app
+- [ ] Add real Gemini API key to install-mac-silent.sh
 - [ ] Test full install on 2nd laptop
 - [ ] Verify auto-sync works end-to-end
 
@@ -147,6 +150,49 @@
 - [x] Environment variable persistence (launchd)
 - [x] Supabase schema (db/supabase-setup.sql)
 - [x] Knowledge base (knowledge/faq.md)
+- [x] Double-click installer app (.app)
+- [x] Double-click uninstaller app (.app)
+- [x] Build script for distribution package
+
+---
+
+## Distribution & Updates
+
+### Building Distribution Package
+```bash
+./build-distribution.sh
+```
+Creates `dist/BSD-Sales-Copilot.zip` ready to share.
+
+**Before distributing:** Edit `install-mac-silent.sh` and add real API keys.
+
+### What Syncs Automatically (No Reinstall)
+| Change | Example |
+|--------|---------|
+| New triggers | Add `;newquestion` to faq.yml |
+| Updated responses | Edit any trigger text |
+| Script changes | Enable Supabase logging in utils.py |
+| Knowledge base | Add FAQs to knowledge/faq.md |
+| Bug fixes | Fix any Python script |
+
+### What Requires Reinstall
+| Change | Why |
+|--------|-----|
+| New launchd service | Need to load new plist |
+| New YAML file | Need new symlink |
+| New env variable | Need launchctl setup |
+
+### Update Strategy
+1. **Most changes:** Push to GitHub → Users get it within 5-10 min
+2. **Structural changes:** Release new version, ask users to reinstall
+3. **Supabase:** Code syncs automatically; credentials baked into install
+
+### Adding Supabase Later
+1. Set up Supabase project
+2. Add URL/key to `install-mac-silent.sh`
+3. Update scripts to POST to Supabase
+4. Push to GitHub → All users start logging
+5. New installs get Supabase automatically
 - [x] Documentation (README.md)
 
 ---
