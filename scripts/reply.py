@@ -37,7 +37,7 @@ def load_knowledge_base():
 
 def generate_reply(question, knowledge_base, api_key):
     """Send question + knowledge base to Gemini API"""
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={api_key}"
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key={api_key}"
 
     prompt = f"""You are a helpful sales representative for BSD (Black Sands Distribution).
 Use the knowledge base below to answer the customer's question.

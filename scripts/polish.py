@@ -23,7 +23,7 @@ from utils import (
 
 def polish_text(text, api_key, num_options=1):
     """Send text to Gemini API for polishing"""
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={api_key}"
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key={api_key}"
 
     if num_options == 1:
         prompt = f"""Rewrite the following text in a friendly professional tone — warm and approachable, but still business-appropriate. Suitable for customer emails. Keep the same meaning and length. Only return the rewritten text, nothing else.
