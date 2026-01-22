@@ -236,6 +236,38 @@ launchctl setenv BSD_COPILOT_PATH "/path/to/bsd-salescopilot"
 espanso restart
 ```
 
+### Sync service not running (after upgrade)
+**Symptom:** Snippets not auto-updating from GitHub
+
+**Cause:** Installer was run before sync service was added, or services were updated
+
+**Check if running:**
+```bash
+launchctl list | grep salescopilot
+# Should show: snippetsync, sync, env
+```
+
+**Fix:** Re-run the installer, or manually install the service:
+```bash
+COPILOT_PATH="$BSD_COPILOT_PATH"
+sed -e "s|__BSD_COPILOT_PATH__|$COPILOT_PATH|g" -e "s|__HOME__|$HOME|g" \
+  "$COPILOT_PATH/install/com.bsd.salescopilot.snippetsync.plist" \
+  > ~/Library/LaunchAgents/com.bsd.salescopilot.snippetsync.plist
+launchctl load ~/Library/LaunchAgents/com.bsd.salescopilot.snippetsync.plist
+```
+
+### GitHub sync returning 404 errors
+**Symptom:** Sync log shows "File not found on GitHub" for all files
+
+**Cause:** Repository is private
+
+**Fix:** Either make the repo public, or add a GitHub token to `scripts/config.json`:
+```json
+{
+  "github_token": "ghp_your_personal_access_token"
+}
+```
+
 ---
 
 ## Decision Log
