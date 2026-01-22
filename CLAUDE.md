@@ -3,9 +3,98 @@
 ## Project Overview
 
 - **What:** Espanso text expander configuration for BSD sales team
-- **Tech:** Espanso (YAML configs) + Python scripts for dynamic lookups
+- **Tech:** Espanso (YAML configs) + Python scripts + GitHub auto-sync
 - **Goal:** Help sales reps quickly respond to common customer questions with consistent, accurate snippets
-- **Repo:** https://github.com/stevecommathe/bsd-salescopilot
+- **Target:** 15 concurrent users (Mac + Windows)
+- **Repo:** https://github.com/stevecommathe/bsd-salescopilot (migrating to BSD org)
+
+---
+
+## Current State: Phase 1.5 Complete
+
+**Status:** Core system built, ready for team testing
+
+### What's Working
+- ✅ All triggers functional (`;hi`, `;reply`, `;p1`, etc.)
+- ✅ Local-first logging (~24ms overhead)
+- ✅ Auto-sync from GitHub (every 5 min)
+- ✅ Mac installer (one-command setup)
+- ✅ Persists across reboots
+
+### Immediate Next Steps
+1. **Create BSD GitHub repo** (public recommended)
+2. **Push code to BSD repo**
+3. **Test installer on 2nd laptop**
+4. **Set up Supabase** for usage analytics (optional)
+
+---
+
+## Architecture Overview
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                           ADMIN (Steven)                                 │
+│  Edit YAML/Python → git commit → git push → GitHub                      │
+└─────────────────────────────────────────────────────────────────────────┘
+                                    │
+                                    ▼
+┌─────────────────────────────────────────────────────────────────────────┐
+│                         GitHub (Source of Truth)                         │
+│  stevecommathe/bsd-salescopilot (will migrate to BSD org)               │
+│  • match/base.yml, faq.yml                                              │
+│  • scripts/*.py                                                          │
+│  • knowledge/faq.md                                                      │
+└─────────────────────────────────────────────────────────────────────────┘
+                                    │
+                    ┌───────────────┼───────────────┐
+                    ▼               ▼               ▼
+┌─────────────────────┐ ┌─────────────────────┐ ┌─────────────────────┐
+│   User Machine 1    │ │   User Machine 2    │ │   User Machine N    │
+│                     │ │                     │ │                     │
+│ ┌─────────────────┐ │ │ ┌─────────────────┐ │ │ ┌─────────────────┐ │
+│ │ sync_snippets   │ │ │ │ sync_snippets   │ │ │ │ sync_snippets   │ │
+│ │ (every 5 min)   │ │ │ │ (every 5 min)   │ │ │ │ (every 5 min)   │ │
+│ │ Downloads from  │ │ │ │ Downloads from  │ │ │ │ Downloads from  │ │
+│ │ GitHub → local  │ │ │ │ GitHub → local  │ │ │ │ GitHub → local  │ │
+│ └────────┬────────┘ │ │ └────────┬────────┘ │ │ └────────┬────────┘ │
+│          ▼          │ │          ▼          │ │          ▼          │
+│ ┌─────────────────┐ │ │ ┌─────────────────┐ │ │ ┌─────────────────┐ │
+│ │    Espanso      │ │ │ │    Espanso      │ │ │ │    Espanso      │ │
+│ │ Reads local     │ │ │ │ Reads local     │ │ │ │ Reads local     │ │
+│ │ YAML files      │ │ │ │ YAML files      │ │ │ │ YAML files      │ │
+│ └────────┬────────┘ │ │ └────────┬────────┘ │ │ └────────┬────────┘ │
+│          ▼          │ │          ▼          │ │          ▼          │
+│ ┌─────────────────┐ │ │ ┌─────────────────┐ │ │ ┌─────────────────┐ │
+│ │  Local Logs     │ │ │ │  Local Logs     │ │ │ │  Local Logs     │ │
+│ │  (.jsonl file)  │ │ │ │  (.jsonl file)  │ │ │ │  (.jsonl file)  │ │
+│ └────────┬────────┘ │ │ └────────┬────────┘ │ │ └────────┬────────┘ │
+│          │          │ │          │          │ │          │          │
+└──────────┼──────────┘ └──────────┼──────────┘ └──────────┼──────────┘
+           │                       │                       │
+           └───────────────────────┼───────────────────────┘
+                                   ▼
+                    ┌─────────────────────────┐
+                    │   Supabase (Optional)   │
+                    │   • usage_logs table    │
+                    │   • gaps table          │
+                    │   Background sync       │
+                    └─────────────────────────┘
+```
+
+### Data Flow
+
+| Trigger Type | Flow | Latency |
+|--------------|------|---------|
+| **Static** (`;hi`) | Espanso → log_snippet.py → local log → return text | ~24ms |
+| **AI** (`;reply`) | Espanso → reply.py → Gemini API → local log → return text | ~1.2s |
+
+### Background Services (launchd)
+
+| Service | Runs | Purpose |
+|---------|------|---------|
+| `snippetsync` | Every 5 min | Downloads latest from GitHub, restarts Espanso if changed |
+| `sync` | Every 5 min | Pushes local logs to Supabase (if configured) |
+| `env` | At login | Sets BSD_COPILOT_PATH for GUI apps |
 
 ---
 
@@ -13,226 +102,139 @@
 
 *Claude: Run through this checklist at the start of every new session.*
 
-1. **Check central learnings** — Read `~/Documents/Projects/LEARNINGS.md` for cross-project knowledge
-2. **Check progress & coach** — Read `~/Documents/Projects/CLAUDE-PROGRESS.md`, note level, provide one tip
-3. **Confirm git status** — Run `git status` and `git branch`
-4. **Review todo list** — Check Priority 1 items below
+1. **Check central learnings** — Read `~/Documents/Projects/LEARNINGS.md`
+2. **Check progress** — Read `~/Documents/Projects/CLAUDE-PROGRESS.md`
+3. **Confirm git status** — Run `git status`
+4. **Review current phase** — Check "Current State" section above
 5. **Ask user** — "What would you like to work on today?"
 
 ---
 
 ## Todo List & Priorities
 
-### Priority 1 (Do Next) — Phase 2: Windows + Analytics
+### Immediate (Before Team Rollout)
+- [ ] Create BSD GitHub repo (public)
+- [ ] Push code to BSD repo
+- [ ] Update `github_repo` in install-mac.sh
+- [ ] Test full install on 2nd laptop
+- [ ] Verify auto-sync works end-to-end
+
+### Phase 2: Windows + Analytics
 - [ ] Create Windows installer (`install-windows.ps1`)
-- [ ] Set up Supabase project and run SQL setup
+- [ ] Set up Supabase project
+- [ ] Run `db/supabase-setup.sql`
 - [ ] Create analytics script (`analytics.py`)
 - [ ] Build Vercel dashboard (basic usage view)
-- [ ] Test with 5 Mac users
 
-### Priority 2 (Soon) — Phase 3: Model Flexibility
+### Phase 3: Polish & Scale
 - [ ] Create AI client abstraction (`ai_client.py`)
 - [ ] Add cost tracking to logging
 - [ ] User guide for sales team
 - [ ] Admin guide (KB updates, analytics)
 
-### Priority 3 (Later)
-- [ ] Explore RAG approach (vector DB for large knowledge base)
-- [ ] Explore chatbot options (Chatbase, Botpress, or custom build)
-- [ ] Salesforce data lookups (customer info, order status)
-- [ ] Multiple tone options (formal, casual, friendly)
+### Phase 4: Future
+- [ ] RAG for large knowledge base
+- [ ] Salesforce data lookups
+- [ ] Chatbot interface option
 
-### Completed — Phase 1: MVP Foundation
-- [x] Set up project folder structure
-- [x] Create CLAUDE.md
-- [x] Create base.yml snippets (`;hi`, `;hello`, `;thanks`, `;sig`)
-- [x] Create faq.yml snippets (10 FAQ responses)
-- [x] Set up symlinks to Espanso config
-- [x] Create AI polish script (`polish.py` with Gemini API)
-- [x] Add AI polish triggers (`;p1`, `;p2`, `;p3`)
-- [x] Build `;reply` trigger with knowledge base
-- [x] Create cross-platform utilities (`utils.py`)
-- [x] Add usage logging to Supabase
-- [x] Add gap detection for low-confidence answers
-- [x] Update base.yml with dynamic `$BSD_COPILOT_PATH`
-- [x] Create config.json structure
-- [x] Create Supabase table definitions (`db/supabase-setup.sql`)
-- [x] Create Mac installer (`install-mac.sh`)
-- [x] Write README documentation
+### Completed ✅
+- [x] Espanso YAML configs (base.yml, faq.yml)
+- [x] AI triggers (`;reply`, `;p1`, `;p2`, `;p3`)
+- [x] Cross-platform clipboard (Mac + Windows ready)
+- [x] Local-first logging system
+- [x] GitHub auto-sync (sync_snippets.py)
+- [x] Mac installer with background services
+- [x] Environment variable persistence (launchd)
+- [x] Supabase schema (db/supabase-setup.sql)
+- [x] Knowledge base (knowledge/faq.md)
+- [x] Documentation (README.md)
 
 ---
 
-## User Context & Training Mode
+## File Structure
 
-### Background
-- 20 years martech experience, former Deloitte Digital partner
-- Specialization: analytics strategy, marketing automation, platform operations
-- Managed dev teams — strong on concepts, new to hands-on coding
-- Can read code, learning to write it
-- New to terminal/CLI operations
-
-### Current Level: 2 (Training Wheels)
-*Explain new concepts only, confirm destructive operations, less verbose*
-
----
-
-## Training Levels Reference
-
-| Level | Name | Description |
-|-------|------|-------------|
-| 1 | Safety Net | Maximum guidance, confirm everything, explain everything |
-| 2 | Training Wheels | Explain new concepts only, confirm destructive ops, less verbose |
-| 3 | Riding Solo | Minimal explanation, just confirm destructive ops |
-| 4 | Full Speed | Trust established, only warn on major risks |
-
----
-
-## Active Training Wheels (Level 2)
-
-Claude follows these practices at current level:
-
-### Communication
-- [ ] **Explain NEW commands/concepts only** — Skip explanation for familiar operations
-- [ ] **Translate errors to plain English** — Never leave an error unexplained
-- [ ] **Brief output recaps** — Keep summaries short
-
-### Safety
-- [ ] **Confirm before destructive operations** — Ask before: delete, overwrite, reset
-- [ ] **Warn before irreversible operations** — Flag operations that can't be undone
-
-### Workflow
-- [ ] **Suggest commit points** — Prompt when it's a good time to commit
-- [ ] **Review todos at session start** — Begin each session by checking the todo list
-
----
-
-## Graduated Skills
-
-*Skills where Claude can reduce hand-holding*
-
-- [x] **Git basics** — add, commit, status (2026-01-19)
-- [x] **File structure awareness** — No need to show tree after every change
-
----
-
-## Workflow Rules
-
-### Git Workflow
-- Commit frequently (after each working unit)
-- Branch naming: `feature/`, `fix/`, `docs/` prefixes
-- Main branch stays stable
-
-### Commit Message Style
-```
-type: Short description
-
-Types: feat, fix, docs, refactor
-```
-
----
-
-## Project-Specific Notes
-
-### File Structure
 ```
 bsd-salescopilot/
 ├── match/
-│   ├── base.yml          ← Core snippets + AI triggers
-│   └── faq.yml           ← FAQ-based response snippets
+│   ├── base.yml              # Core snippets + AI triggers (all logged)
+│   └── faq.yml               # FAQ response snippets (all logged)
 ├── scripts/
-│   ├── utils.py          ← Shared utilities (clipboard, logging, config)
-│   ├── reply.py          ← AI reply from knowledge base
-│   ├── polish.py         ← AI text polisher
-│   ├── config.json       ← Configuration (gitignored)
-│   └── config.json.template
+│   ├── utils.py              # Shared: clipboard, config, logging
+│   ├── local_log.py          # Local JSONL logging
+│   ├── log_snippet.py        # Wrapper for static triggers
+│   ├── reply.py              # AI reply from knowledge base
+│   ├── polish.py             # AI text polisher
+│   ├── sync_snippets.py      # GitHub → local sync
+│   ├── sync_logs.py          # Local → Supabase sync
+│   ├── config.json           # User config (gitignored)
+│   ├── config.json.template  # Config template
+│   └── .logs/                # Local log files (gitignored)
 ├── knowledge/
-│   └── faq.md            ← Knowledge base for AI responses
+│   └── faq.md                # Knowledge base for AI
 ├── db/
-│   └── supabase-setup.sql ← Database schema
-├── install-mac.sh        ← Mac installer
-├── CLAUDE.md             ← This file
-└── README.md             ← Project documentation
-```
-
-### Espanso YAML Format
-
-Snippets use this format:
-```yaml
-matches:
-  - trigger: ";shortcut"
-    replace: "The expanded text goes here"
-```
-
-**Multi-line example:**
-```yaml
-matches:
-  - trigger: ";sig"
-    replace: |
-      Best regards,
-      [Name]
-      BSD Sales Team
-```
-
-**With clipboard/cursor:**
-```yaml
-matches:
-  - trigger: ";email"
-    replace: "Hi $|$,\n\nThanks for reaching out!"
-    # $|$ places cursor there after expansion
-```
-
-### Conventions
-- All triggers start with semicolon (`;`)
-- Use lowercase triggers
-- Keep triggers short but memorable (`;inv`, `;track`, `;stock`)
-- Group related snippets in the same file
-
-### Key Commands
-```bash
-# Test espanso config
-espanso path                    # Show config location
-
-# Deploy snippets (symlink approach)
-ln -sf ~/Documents/Projects/bsd-salescopilot/match/*.yml ~/.config/espanso/match/
-
-# Restart espanso to pick up changes
-espanso restart
-
-# Check espanso status
-espanso status
-
-# View espanso logs (for debugging)
-espanso log
-```
-
-### Python Scripts (Future)
-Scripts in `scripts/` can be called from Espanso for dynamic content:
-```yaml
-matches:
-  - trigger: ";lookup"
-    replace: "{{output}}"
-    vars:
-      - name: output
-        type: script
-        params:
-          args:
-            - python3
-            - /path/to/scripts/lookup.py
+│   └── supabase-setup.sql    # Database schema
+├── install/
+│   ├── com.bsd.salescopilot.env.plist          # Env var persistence
+│   ├── com.bsd.salescopilot.sync.plist         # Log sync service
+│   └── com.bsd.salescopilot.snippetsync.plist  # Snippet sync service
+├── install-mac.sh            # One-command Mac installer
+├── CLAUDE.md                 # This file
+└── README.md                 # User documentation
 ```
 
 ---
 
-## Troubleshooting Log
+## Key Configuration
 
-*Issues encountered and their solutions — check here when things break*
+### config.json (per-user, gitignored)
+```json
+{
+  "gemini_api_key": "...",
+  "supabase_url": "https://xxx.supabase.co",
+  "supabase_anon_key": "...",
+  "user_id": "username",
+  "github_repo": "BSD-ORG/bsd-salescopilot",
+  "github_branch": "main",
+  "sync_enabled": true,
+  "log_usage": true
+}
+```
 
-### Gemini API 429 errors (rate limit)
-**Problem:** New API keys or free tier projects return "429 Too Many Requests"
-**Solution:** Use an API key from a project with billing enabled (paid tier). Free tier has very low limits and new keys need warmup time.
+### Environment Variables
+```bash
+BSD_COPILOT_PATH="/path/to/bsd-salescopilot"  # Set by installer
+```
 
-### Espanso trigger prefix conflicts
-**Problem:** `;polish` was triggering instead of `;polish3`
-**Solution:** Use non-overlapping trigger names (`;p1`, `;p2`, `;p3` instead of `;polish`, `;polish2`, `;polish3`)
+---
+
+## Troubleshooting
+
+### Check sync logs
+```bash
+tail -20 ~/Library/Logs/BSDSalesCopilot/sync.log
+```
+
+### Check local usage logs
+```bash
+cat ~/path/to/bsd-salescopilot/scripts/.logs/usage.jsonl
+```
+
+### Manual sync test
+```bash
+python3 ~/path/to/bsd-salescopilot/scripts/sync_snippets.py
+```
+
+### Espanso not picking up changes
+```bash
+espanso restart
+espanso log  # Check for errors
+```
+
+### Environment variable not set
+```bash
+launchctl setenv BSD_COPILOT_PATH "/path/to/bsd-salescopilot"
+espanso restart
+```
 
 ---
 
@@ -240,75 +242,56 @@ matches:
 
 | Date | Decision | Rationale |
 |------|----------|-----------|
-| 2026-01-19 | Use Espanso for text expansion | Cross-platform, YAML-based, supports scripts |
-| 2026-01-19 | Semicolon prefix for triggers | Avoids accidental triggers, easy to type |
-| 2026-01-19 | Separate base.yml and faq.yml | Organize by snippet type for maintainability |
-| 2026-01-19 | Graduate to Level 2 | User comfortable with git basics, less verbosity needed |
-| 2026-01-19 | Use Gemini API for AI features | Free tier available, user has paid account, cheap (~$0.0001/request) |
-| 2026-01-19 | Short triggers for AI (`;p1`, `;p2`, `;p3`) | Avoid prefix conflicts (`;polish` was catching `;polish3`) |
-| 2026-01-19 | Friendly professional tone for AI | Matches BSD brand voice — warm but business-appropriate |
-| 2026-01-19 | Store API key in .env (gitignored) | Security best practice — keys never committed |
-| 2026-01-22 | Google Drive for team sync | BSD uses Google Workspace; familiar; free |
-| 2026-01-22 | Supabase for logging | Free tier (500MB); REST API; handles concurrent writes |
-| 2026-01-22 | Cross-platform clipboard in utils.py | PowerShell Get-Clipboard for Windows; pbpaste for Mac |
-| 2026-01-22 | config.json for settings | Centralized config; env vars as fallback |
-| 2026-01-22 | $BSD_COPILOT_PATH env var | Dynamic paths for Google Drive locations |
+| 2026-01-19 | Use Espanso | Cross-platform, YAML-based, script support |
+| 2026-01-19 | Gemini API for AI | Cheap (~$0.0001/req), user has paid account |
+| 2026-01-22 | Local-first logging | Fast (24ms), works offline, reliable |
+| 2026-01-22 | GitHub raw URLs for sync | Simple, no git on user machines, versioned |
+| 2026-01-22 | launchd for background | Native Mac, survives reboots, reliable |
+| 2026-01-22 | Public repo recommended | Simplifies sync (no auth needed), code is just configs |
 
 ---
 
-## Concept Translations
+## Snippet Reference
 
-| Dev Concept | Martech Equivalent |
-|-------------|-------------------|
-| Espanso trigger | Merge tag / personalization token |
-| YAML config | Campaign settings file |
-| Python script | Custom function / API call |
-| Symlink | Shortcut / alias |
-| API key | Platform credentials / access token |
-| .env file | Secure config storage (like a password vault) |
-| RAG (Retrieval Augmented Generation) | Dynamic content lookup + AI response |
-| Vector database | Smart search index for AI |
-| Context stuffing | Including reference docs in AI prompt |
-
----
-
-## Current Snippet Reference
-
-### base.yml — Core snippets
+### Static Triggers (all logged)
 | Trigger | Description |
 |---------|-------------|
 | `;hi` | Friendly greeting |
-| `;hello` | Hello + how can I help |
+| `;hello` | Hello + help offer |
 | `;thanks` | Thank you closing |
-| `;sig` | Email signature block |
+| `;sig` | Email signature |
+| `;portal` | Portal access info |
+| `;terms` | Payment terms |
+| `;moq` | MOQ / FCL mixing |
+| `;docs` | Document list |
+| `;cif` | CIF shipping |
+| `;noddp` | No DDP explanation |
+| `;leadtime` | Lead time info |
+| `;nolc` | No LC/Escrow |
+| `;locate` | Office locations |
+| `;trust` | Credibility response |
+
+### AI Triggers (logged with confidence)
+| Trigger | Description |
+|---------|-------------|
 | `;p1` | AI polish (1 option) |
 | `;p2` | AI polish (2 options) |
 | `;p3` | AI polish (3 options) |
-| `;reply` | AI reply from knowledge base (copy question first) |
-
-### faq.yml — FAQ responses
-| Trigger | Description |
-|---------|-------------|
-| `;portal` | Portal access + signup link |
-| `;terms` | Payment terms (20/80 NET14) |
-| `;moq` | MOQ / FCL mixing explanation |
-| `;docs` | Full document list |
-| `;cif` | CIF shipping terms |
-| `;noddp` | No DDP explanation |
-| `;leadtime` | Lead time info (2-3 weeks) |
-| `;nolc` | No LC/Escrow policy |
-| `;locate` | Office locations |
-| `;trust` | Credibility/references response |
+| `;reply` | AI reply from knowledge base |
 
 ---
 
-## Snippet Ideas (Backlog)
+## Migration Checklist (BSD Repo)
 
-- [ ] `;stock` — Stock availability response
-- [ ] `;ship` — Shipping info
-- [ ] `;return` — Return policy
-- [ ] `;price` — Pricing inquiry response
+When ready to migrate to BSD's GitHub:
+
+1. [ ] Create `bsd-salescopilot` repo in BSD org (PUBLIC)
+2. [ ] `git remote add bsd https://github.com/BSD-ORG/bsd-salescopilot.git`
+3. [ ] `git push bsd main`
+4. [ ] Update `GITHUB_REPO` in `install-mac.sh`
+5. [ ] Commit and push the change
+6. [ ] Test sync on 2nd laptop
 
 ---
 
-*Last updated: 2026-01-22*
+*Last updated: 2026-01-22 (Phase 1.5 complete)*
