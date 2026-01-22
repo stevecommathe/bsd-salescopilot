@@ -88,12 +88,19 @@ def get_file_hash(filepath):
         return hashlib.md5(f.read()).hexdigest()
 
 
-def download_file(repo, branch, filepath):
-    """Download file from GitHub raw"""
+def download_file(repo, branch, filepath, token=None):
+    """
+    Download file from GitHub raw
+    For private repos, pass a GitHub personal access token
+    """
     url = f"https://raw.githubusercontent.com/{repo}/{branch}/{filepath}"
 
+    headers = {"User-Agent": "BSD-SalesCopilot-Sync/1.0"}
+    if token:
+        headers["Authorization"] = f"token {token}"
+
     try:
-        req = Request(url, headers={"User-Agent": "BSD-SalesCopilot-Sync/1.0"})
+        req = Request(url, headers=headers)
         with urlopen(req, timeout=30) as response:
             content = response.read()
             return content, hashlib.md5(content).hexdigest()
@@ -101,12 +108,15 @@ def download_file(repo, branch, filepath):
         if e.code == 404:
             log(f"File not found on GitHub: {filepath}", "WARN")
             return None, None
+        elif e.code == 401 or e.code == 403:
+            log(f"GitHub auth failed for {filepath} - repo may be private. Add github_token to config.json", "ERROR")
+            return None, None
         raise
     except Exception as e:
         raise
 
 
-def sync_file(repo, branch, filepath, project_dir):
+def sync_file(repo, branch, filepath, project_dir, token=None):
     """
     Sync a single file from GitHub
     Returns: "updated", "unchanged", or "error"
@@ -115,7 +125,7 @@ def sync_file(repo, branch, filepath, project_dir):
     local_hash = get_file_hash(local_path)
 
     try:
-        content, remote_hash = download_file(repo, branch, filepath)
+        content, remote_hash = download_file(repo, branch, filepath, token)
 
         if content is None:
             return "skipped"
@@ -176,9 +186,12 @@ def main():
     repo = config.get("github_repo", DEFAULT_CONFIG["github_repo"])
     branch = config.get("github_branch", DEFAULT_CONFIG["github_branch"])
     files = config.get("files_to_sync", DEFAULT_CONFIG["files_to_sync"])
+    token = config.get("github_token")  # Optional: for private repos
 
     log(f"Repo: {repo} (branch: {branch})")
     log(f"Files to sync: {len(files)}")
+    if token:
+        log("Using GitHub token for authentication")
 
     # Determine project directory
     # If BSD_COPILOT_PATH is set, use that; otherwise use relative to this script
@@ -189,7 +202,7 @@ def main():
     results = {"updated": 0, "unchanged": 0, "error": 0, "skipped": 0}
 
     for filepath in files:
-        result = sync_file(repo, branch, filepath, project_dir)
+        result = sync_file(repo, branch, filepath, project_dir, token)
         results[result] += 1
 
     # Summary
